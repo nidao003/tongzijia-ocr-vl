@@ -1,0 +1,130 @@
+{
+  "agent": {
+    "id": "invoice-agent",
+    "name": "发票处理专员",
+    "role": "户部·发票司",
+    "emoji": "🧾",
+    "version": "1.0.0",
+    "description": "专门负责发票识别、分类和字段提取的子 Agent",
+    "type": "subagent",
+    "mode": "standalone"
+  },
+
+  "workspace": "/Users/daodao/.openclaw/workspace-invoice-agent",
+
+  "model": {
+    "default": "anthropic/claude-sonnet-4-6",
+    "fallback": "anthropic/claude-haiku-3-5"
+  },
+
+  "skills": [
+    {
+      "name": "paddleocr-vl",
+      "source": "local",
+      "path": "/Users/daodao/dsl/PaddleOCR-VL/openclaw_config.json",
+      "type": "service",
+      "description": "PaddleOCR-VL 高性能文档识别服务",
+      "enabled": true,
+      "config": {
+        "endpoint": "http://localhost:8001",
+        "health_check": "/health",
+        "timeout": 30
+      },
+      "tools": [
+        "recognize_document",
+        "batch_recognize",
+        "recognize_base64",
+        "health_check"
+      ]
+    },
+    {
+      "name": "invoice-processor",
+      "source": "local",
+      "path": "/Users/daodao/dsl/PaddleOCR-VL/agents/invoice-agent/skills/invoice-processor/SKILL.md",
+      "type": "skill",
+      "description": "发票类型识别和智能字段提取",
+      "enabled": true
+    }
+  ],
+
+  "capabilities": {
+    "invoice_types": [
+      "vat_special",
+      "vat_common",
+      "electronic",
+      "quota"
+    ],
+    "supported_formats": ["PNG", "JPEG", "WebP"],
+    "output_formats": ["CSV", "JSON", "Excel"],
+    "batch_processing": true,
+    "max_batch_size": 10,
+    "auto_classification": true
+  },
+
+  "communication": {
+    "parent_agent": {
+      "enabled": true,
+      "endpoint": null,
+      "protocol": "http",
+      "report_result": true,
+      "heartbeat_interval": 60
+    },
+    "api": {
+      "enabled": true,
+      "port": 8002,
+      "endpoints": {
+        "process": "POST /process",
+        "batch": "POST /batch",
+        "classify": "POST /classify",
+        "health": "GET /health",
+        "types": "GET /invoice-types"
+      }
+    }
+  },
+
+  "storage": {
+    "output_dir": "./invoices_output",
+    "auto_create_dir": true,
+    "timestamp_format": "%Y-%m-%d",
+    "default_format": "csv",
+    "keep_raw_text": true
+  },
+
+  "processing": {
+    "confidence_threshold": 0.7,
+    "batch_size": 10,
+    "parallel_workers": 3,
+    "retry_failed": true,
+    "max_retries": 2,
+    "save_intermediate": true
+  },
+
+  "behavior": {
+    "auto_classify": true,
+    "validate_fields": true,
+    "merge_duplicates": false,
+    "generate_summary": true,
+    "report_progress": true
+  },
+
+  "output": {
+    "include_metadata": true,
+    "include_confidence": true,
+    "include_validation": true,
+    "language": "zh-CN"
+  },
+
+  "errors": {
+    "ocr_failure": "skip",
+    "classification_failure": "process_all",
+    "field_extraction_failure": "continue",
+    "storage_failure": "retry"
+  },
+
+  "metadata": {
+    "created_date": "2026-03-11",
+    "last_updated": "2026-03-11",
+    "author": "PaddleOCR-VL Integration",
+    "documentation": "/Users/daodao/dsl/PaddleOCR-VL/agents/invoice-agent/SOUL.md"
+  }
+}

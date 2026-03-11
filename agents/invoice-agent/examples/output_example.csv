@@ -1,0 +1,6 @@
+filename,invoice_type,invoice_code,invoice_no,invoice_date,buyer_name,buyer_tax_id,seller_name,seller_tax_id,amount,tax_rate,tax_amount,total_amount,remark,confidence
+invoice1.png,增值税专用发票,1100123456,12345678,2026-03-11,北京科技有限公司,91110000XXXXXXXXXX,上海贸易有限公司,91310000YYYYYYYYYY,1000.00,13%,130.00,1130.00,货已收到,0.95
+invoice2.png,增值税专用发票,1100123456,12345679,2026-03-10,深圳科技创新公司,91440300ZZZZZZZZZZ,广州电子设备公司,91440100AAAAAAAAAA,5000.00,13%,650.00,5650.00,设备款,0.93
+invoice3.png,增值税普通发票,1100123457,87654321,2026-03-09,张三,,北京朝阳超市有限公司,91110000BBBBBBBBBB,,,268.00,,268.00,日用品,0.90
+invoice4.png,增值税普通发票,1100123457,87654322,2026-03-08,个人,王五,上海餐饮管理有限公司,91310000CCCCCCCCCC,,,156.00,,156.00,餐饮费,0.88
+invoice5.png,电子发票,031001800111,12345680,2026-03-07,个人,,在线服务有限公司,91110000DDDDDDDDD,,,299.00,,299.00,会员服务,0.91

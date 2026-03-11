@@ -1,0 +1,156 @@
+{
+  "processing_time": "2026-03-11T23:30:00Z",
+  "agent": "invoice-agent",
+  "task_type": "batch_process",
+  "summary": {
+    "total_invoices": 5,
+    "success_count": 5,
+    "failed_count": 0,
+    "by_type": {
+      "vat_special": 2,
+      "vat_common": 2,
+      "electronic": 1
+    },
+    "financial_summary": {
+      "total_amount": 7673.00,
+      "total_tax_amount": 780.00,
+      "total_with_tax": 8453.00
+    },
+    "performance": {
+      "avg_confidence": 0.914,
+      "processing_time": 35.2,
+      "avg_time_per_invoice": 7.04
+    }
+  },
+  "invoices": [
+    {
+      "filename": "invoice1.png",
+      "invoice_type": "vat_special",
+      "invoice_type_name": "增值税专用发票",
+      "confidence": 0.95,
+      "fields": {
+        "invoice_code": "1100123456",
+        "invoice_no": "12345678",
+        "invoice_date": "2026-03-11",
+        "buyer_name": "北京科技有限公司",
+        "buyer_tax_id": "91110000XXXXXXXXXX",
+        "seller_name": "上海贸易有限公司",
+        "seller_tax_id": "91310000YYYYYYYYYY",
+        "amount": "1000.00",
+        "tax_rate": "13%",
+        "tax_amount": "130.00",
+        "total_amount": "1130.00",
+        "remark": "货已收到"
+      },
+      "validation": {
+        "required_fields_present": true,
+        "missing_fields": [],
+        "valid": true
+      }
+    },
+    {
+      "filename": "invoice2.png",
+      "invoice_type": "vat_special",
+      "invoice_type_name": "增值税专用发票",
+      "confidence": 0.93,
+      "fields": {
+        "invoice_code": "1100123456",
+        "invoice_no": "12345679",
+        "invoice_date": "2026-03-10",
+        "buyer_name": "深圳科技创新公司",
+        "buyer_tax_id": "91440300ZZZZZZZZZZ",
+        "seller_name": "广州电子设备公司",
+        "seller_tax_id": "91440100AAAAAAAAAA",
+        "amount": "5000.00",
+        "tax_rate": "13%",
+        "tax_amount": "650.00",
+        "total_amount": "5650.00",
+        "remark": "设备款"
+      },
+      "validation": {
+        "required_fields_present": true,
+        "missing_fields": [],
+        "valid": true
+      }
+    },
+    {
+      "filename": "invoice3.png",
+      "invoice_type": "vat_common",
+      "invoice_type_name": "增值税普通发票",
+      "confidence": 0.90,
+      "fields": {
+        "invoice_code": "1100123457",
+        "invoice_no": "87654321",
+        "invoice_date": "2026-03-09",
+        "buyer": "张三",
+        "seller": "北京朝阳超市有限公司",
+        "seller_tax_id": "91110000BBBBBBBBBB",
+        "amount": "",
+        "tax_rate": "",
+        "tax_amount": "",
+        "total_amount": "268.00",
+        "remark": "日用品"
+      },
+      "validation": {
+        "required_fields_present": true,
+        "missing_fields": [],
+        "valid": true
+      }
+    },
+    {
+      "filename": "invoice4.png",
+      "invoice_type": "vat_common",
+      "invoice_type_name": "增值税普通发票",
+      "confidence": 0.88,
+      "fields": {
+        "invoice_code": "1100123457",
+        "invoice_no": "87654322",
+        "invoice_date": "2026-03-08",
+        "buyer": "王五",
+        "seller": "上海餐饮管理有限公司",
+        "seller_tax_id": "91310000CCCCCCCCCC",
+        "amount": "",
+        "tax_rate": "",
+        "tax_amount": "",
+        "total_amount": "156.00",
+        "remark": "餐饮费"
+      },
+      "validation": {
+        "required_fields_present": true,
+        "missing_fields": [],
+        "valid": true
+      }
+    },
+    {
+      "filename": "invoice5.png",
+      "invoice_type": "electronic",
+      "invoice_type_name": "电子发票",
+      "confidence": 0.91,
+      "fields": {
+        "invoice_code": "031001800111",
+        "invoice_no": "12345680",
+        "invoice_date": "2026-03-07",
+        "buyer": "个人",
+        "seller": "在线服务有限公司",
+        "seller_tax_id": "91110000DDDDDDDDD",
+        "amount": "",
+        "tax_rate": "",
+        "tax_amount": "",
+        "total_amount": "299.00",
+        "remark": "会员服务",
+        "check_code": "12345678901234567890"
+      },
+      "validation": {
+        "required_fields_present": true,
+        "missing_fields": [],
+        "valid": true
+      }
+    }
+  ],
+  "output_files": {
+    "csv": "~/invoices_output/2026-03-11_invoices.csv",
+    "json": "~/invoices_output/2026-03-11_invoices.json"
+  },
+  "learning_events": [],
+  "message": "成功处理5张发票，生成CSV和JSON文件"
+}

@@ -1,0 +1,219 @@
+{
+  "agent": {
+    "id": "invoice-agent",
+    "name": "发票处理专员",
+    "role": "户部·发票司",
+    "emoji": "🧾",
+    "version": "1.0.0",
+    "description": "专门负责发票识别、分类和字段提取的子 Agent",
+    "type": "subagent",
+    "mode": "session",
+    "spawn_method": "sessions_spawn"
+  },
+
+  "workspace": "/Users/daodao/.openclaw/workspace-invoice-agent",
+
+  "model": {
+    "default": "anthropic/claude-sonnet-4-6",
+    "fallback": "anthropic/claude-haiku-3-5"
+  },
+
+  "skills": [
+    {
+      "name": "paddleocr-vl",
+      "source": "external",
+      "type": "service",
+      "description": "PaddleOCR-VL 高性能文档识别服务",
+      "enabled": true,
+      "required": true,
+      "config": {
+        "source": "local",
+        "config_path": "/Users/daodao/dsl/PaddleOCR-VL/openclaw_config.json",
+        "service_endpoint": "http://localhost:8001",
+        "health_check": "/health",
+        "timeout": 30
+      },
+      "tools": [
+        "recognize_document",
+        "batch_recognize",
+        "recognize_base64",
+        "health_check"
+      ],
+      "documentation": "PaddleOCR-VL 项目文档"
+    }
+  ],
+
+  "capabilities": {
+    "invoice_types": [
+      "vat_special",
+      "vat_common",
+      "electronic",
+      "quota"
+    ],
+    "supported_formats": ["PNG", "JPEG", "WebP"],
+    "output_formats": ["CSV", "JSON", "Excel"],
+    "batch_processing": true,
+    "max_batch_size": 10,
+    "auto_classification": true,
+    "continuous_learning": true
+  },
+
+  "built_in_features": {
+    "invoice_classification": {
+      "description": "发票类型自动分类",
+      "implementation": "internal",
+      "depends_on": ["paddleocr-vl"]
+    },
+    "field_extraction": {
+      "description": "智能字段提取",
+      "implementation": "internal",
+      "depends_on": ["paddleocr-vl"]
+    },
+    "data_formatting": {
+      "description": "数据格式化和输出",
+      "implementation": "internal",
+      "depends_on": []
+    },
+    "continuous_learning": {
+      "description": "持续学习和优化",
+      "implementation": "internal",
+      "depends_on": ["paddleocr-vl"]
+    }
+  },
+
+  "communication": {
+    "method": "sessions_spawn",
+    "parent_agent": "main-agent",
+    "session_timeout": 300,
+    "report_result": true,
+    "report_learning": true
+  },
+
+  "tasks": {
+    "process_invoice": {
+      "description": "处理单张发票",
+      "parameters": {
+        "image_path": "string (required)",
+        "output_format": "string (optional, default: json)"
+      },
+      "requires_skill": "paddleocr-vl"
+    },
+    "batch_process": {
+      "description": "批量处理发票",
+      "parameters": {
+        "image_paths": "array (required)",
+        "output_format": "string (optional, default: csv)"
+      },
+      "requires_skill": "paddleocr-vl"
+    },
+    "classify_invoice": {
+      "description": "单独分类发票",
+      "parameters": {
+        "image_path": "string (required)"
+      },
+      "requires_skill": "paddleocr-vl"
+    },
+    "learn_new_type": {
+      "description": "学习新发票类型",
+      "parameters": {
+        "type_name": "string (required)",
+        "ocr_text": "string (required)",
+        "field_examples": "object (optional)"
+      },
+      "requires_skill": "paddleocr-vl"
+    }
+  },
+
+  "skill_requirements": {
+    "paddleocr-vl": {
+      "required": true,
+      "fallback_behavior": "report_to_parent",
+      "error_message": "PaddleOCR-VL 技能未配置或不可用，无法执行发票识别任务",
+      "configuration_instructions": {
+        "step_1": "确认 PaddleOCR-VL 项目路径存在: /Users/daodao/dsl/PaddleOCR-VL",
+        "step_2": "检查配置文件: /Users/daodao/dsl/PaddleOCR-VL/openclaw_config.json",
+        "step_3": "启动 OCR 服务: cd /Users/daodao/dsl/PaddleOCR-VL && ./start_services.sh",
+        "step_4": "验证服务: curl http://localhost:8001/health",
+        "step_5": "在主 Agent 中配置 paddleocr-vl 技能"
+      }
+    }
+  },
+
+  "storage": {
+    "output_dir": "~/invoices_output",
+    "auto_create_dir": true,
+    "timestamp_format": "%Y-%m-%d",
+    "default_format": "csv",
+    "keep_raw_text": false
+  },
+
+  "processing": {
+    "confidence_threshold": 0.7,
+    "batch_size": 10,
+    "parallel_workers": 3,
+    "retry_failed": true,
+    "max_retries": 2,
+    "save_intermediate": true,
+    "skill_check_before_task": true
+  },
+
+  "learning": {
+    "enabled": true,
+    "auto_learn": true,
+    "min_samples_for_new_type": 3,
+    "failure_rate_threshold": 0.3,
+    "report_learning_progress": true
+  },
+
+  "behavior": {
+    "auto_classify": true,
+    "validate_fields": true,
+    "merge_duplicates": false,
+    "generate_summary": true,
+    "report_progress": true,
+    "check_skill_availability": true
+  },
+
+  "output": {
+    "include_metadata": true,
+    "include_confidence": true,
+    "include_validation": true,
+    "language": "zh-CN",
+    "detailed_fields": true
+  },
+
+  "error_handling": {
+    "skill_unavailable": {
+      "action": "report_to_parent",
+      "message": "向主 Agent 汇报技能不可用，请求配置",
+      "wait_for_configuration": true
+    },
+    "ocr_failure": {
+      "action": "skip",
+      "continue_processing": true,
+      "log_error": true
+    },
+    "classification_failure": {
+      "action": "process_all",
+      "mark_as_unknown": true
+    },
+    "field_extraction_failure": {
+      "action": "continue",
+      "mark_missing": true
+    },
+    "storage_failure": {
+      "action": "retry",
+      "max_retries": 3
+    }
+  },
+
+  "metadata": {
+    "created_date": "2026-03-11",
+    "last_updated": "2026-03-11",
+    "author": "PaddleOCR-VL Integration",
+    "documentation": "SOUL.md",
+    "communication_method": "sessions_spawn",
+    "skills_count": 1,
+    "dependent_skills": ["paddleocr-vl"]
+  }
+}
