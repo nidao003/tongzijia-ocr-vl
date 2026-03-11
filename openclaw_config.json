@@ -1,0 +1,256 @@
+{
+  "name": "paddleocr-service",
+  "version": "1.0.0",
+  "description": "PaddleOCR-VL 高性能文档识别服务",
+  "author": "OpenClaw Integration",
+
+  "service": {
+    "type": "http",
+    "baseUrl": "http://localhost:8001",
+    "healthCheck": "/health",
+    "documentation": "/docs"
+  },
+
+  "tools": [
+    {
+      "name": "recognize_document",
+      "displayName": "识别文档",
+      "description": "识别图片中的文字内容，支持 109 种语言",
+      "category": "ocr",
+
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "image_path": {
+            "type": "string",
+            "description": "图片文件路径（支持 PNG, JPEG, WebP）",
+            "examples": [
+              "/path/to/document.png",
+              "/path/to/receipt.jpg"
+            ]
+          }
+        },
+        "required": ["image_path"]
+      },
+
+      "implementation": {
+        "type": "python",
+        "module": "paddleocr_tool",
+        "function": "quick_recognize",
+        "imports": ["from paddleocr_tool import quick_recognize"]
+      },
+
+      "output": {
+        "type": "string",
+        "description": "识别的文字内容"
+      },
+
+      "examples": [
+        {
+          "description": "识别单张文档",
+          "input": {
+            "image_path": "/Users/daodao/dsl/paddleocr-vl/test_image.png"
+          },
+          "output": "Hello PaddleOCR-VL!\n\nTesting OCR on Mac M4"
+        }
+      ],
+
+      "performance": {
+        "average_time": "7秒",
+        "throughput": "8.6张/分钟",
+        "accuracy": "100%"
+      }
+    },
+
+    {
+      "name": "batch_recognize",
+      "displayName": "批量识别",
+      "description": "批量识别多张图片",
+      "category": "ocr",
+
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "image_paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "图片路径列表"
+          }
+        },
+        "required": ["image_paths"]
+      },
+
+      "implementation": {
+        "type": "python",
+        "module": "paddleocr_tool",
+        "function": "batch_recognize",
+        "imports": ["from paddleocr_tool import batch_recognize"]
+      },
+
+      "output": {
+        "type": "array",
+        "description": "识别结果列表",
+        "items": {
+          "type": "object",
+          "properties": {
+            "success": {"type": "boolean"},
+            "text": {"type": "string"},
+            "filename": {"type": "string"},
+            "usage": {"type": "object"}
+          }
+        }
+      },
+
+      "examples": [
+        {
+          "description": "批量识别多张图片",
+          "input": {
+            "image_paths": [
+              "/path/to/doc1.png",
+              "/path/to/doc2.png",
+              "/path/to/doc3.png"
+            ]
+          },
+          "output": [
+            {
+              "success": true,
+              "filename": "doc1.png",
+              "text": "第一张图片内容"
+            },
+            {
+              "success": true,
+              "filename": "doc2.png",
+              "text": "第二张图片内容"
+            },
+            {
+              "success": true,
+              "filename": "doc3.png",
+              "text": "第三张图片内容"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "recognize_base64",
+      "displayName": "Base64识别",
+      "description": "识别 Base64 编码的图片",
+      "category": "ocr",
+
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "image_base64": {
+            "type": "string",
+            "description": "Base64 编码的图片数据"
+          }
+        },
+        "required": ["image_base64"]
+      },
+
+      "implementation": {
+        "type": "python",
+        "module": "paddleocr_tool",
+        "class": "PaddleOCRTool",
+        "method": "recognize_base64",
+        "imports": ["from paddleocr_tool import PaddleOCRTool"]
+      },
+
+      "output": {
+        "type": "object",
+        "description": "识别结果",
+        "properties": {
+          "success": {"type": "boolean"},
+          "text": {"type": "string"},
+          "usage": {"type": "object"}
+        }
+      }
+    },
+
+    {
+      "name": "health_check",
+      "displayName": "健康检查",
+      "description": "检查 OCR 服务状态",
+      "category": "system",
+
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+
+      "implementation": {
+        "type": "python",
+        "module": "paddleocr_tool",
+        "class": "PaddleOCRTool",
+        "method": "health_check",
+        "imports": ["from paddleocr_tool import PaddleOCRTool"]
+      },
+
+      "output": {
+        "type": "object",
+        "description": "服务状态信息",
+        "properties": {
+          "status": {"type": "string"},
+          "mlx_vlm_service": {"type": "string"},
+          "api_server": {"type": "string"}
+        }
+      }
+    }
+  ],
+
+  "capabilities": {
+    "languages": [
+      "中文",
+      "英文",
+      "日文",
+      "韩文",
+      "德文",
+      "法文",
+      "西班牙文",
+      "俄文",
+      "阿拉伯文"
+    ],
+    "supported_formats": ["PNG", "JPEG", "WebP"],
+    "max_file_size": "10MB",
+    "performance": {
+      "average_time": "7秒",
+      "throughput": "8.6张/分钟",
+      "acceleration": "22.4x (相比CPU)"
+    }
+  },
+
+  "usage": {
+    "quick_start": "1. 确保服务运行: curl http://localhost:8001/health\n2. 调用工具: recognize_document(image_path='/path/to/image.png')",
+
+    "python_example": "# 导入工具\nfrom paddleocr_tool import quick_recognize\n\n# 识别图片\ntext = quick_recognize('/path/to/image.png')\nprint(text)",
+
+    "curl_example": "curl -X POST -F 'file=@/path/to/image.png' http://localhost:8001/ocr"
+  },
+
+  "troubleshooting": {
+    "service_not_running": {
+      "problem": "服务连接失败",
+      "solution": "启动服务: cd /Users/daodao/dsl/paddleocr-vl && ./start_services.sh"
+    },
+    "timeout_error": {
+      "problem": "请求超时",
+      "solution": "正常情况，平均7秒，大批量请分批处理"
+    },
+    "format_error": {
+      "problem": "文件格式错误",
+      "solution": "仅支持 PNG, JPEG, WebP 格式"
+    }
+  },
+
+  "metadata": {
+    "created_date": "2025年",
+    "last_updated": "2025年",
+    "version": "1.0.0",
+    "documentation": "OPENCLAW_GUIDE.md",
+    "api_docs": "http://localhost:8001/docs"
+  }
+}
