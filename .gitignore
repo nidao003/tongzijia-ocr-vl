@@ -37,12 +37,8 @@ env.bak/
 *.params
 
 # Logs
-*.log
-logs/
+logs/*.log
 *.log.*
-mlx_vlm_server.log
-mlx_vlm_api_server.log
-api_server.log
 
 # Test files
 test_image.png

@@ -32,10 +32,10 @@ start_mlx_vlm() {
     echo "📦 启动 MLX-VLM 推理服务..."
     if check_port 8111; then
         cd "$PROJECT_DIR"
-        $PYTHON -m mlx_vlm.server --port 8111 > mlx_vlm_server.log 2>&1 &
+        $PYTHON -m mlx_vlm.server --port 8111 > logs/mlx_vlm_server.log 2>&1 &
         MLX_PID=$!
         echo "✅ MLX-VLM 服务已启动 (PID: $MLX_PID)"
-        echo "   日志文件: mlx_vlm_server.log"
+        echo "   日志文件: logs/mlx_vlm_server.log"
         sleep 3
     else
         echo "⚠️  MLX-VLM 服务已在运行，跳过启动"
@@ -48,12 +48,12 @@ start_api_server() {
     echo "📦 启动 PaddleOCR-VL API 服务..."
     if check_port 8000; then
         cd "$PROJECT_DIR"
-        $PYTHON api_server.py > api_server.log 2>&1 &
+        $PYTHON api_server.py > logs/api_server.log 2>&1 &
         API_PID=$!
         echo "✅ API 服务已启动 (PID: $API_PID)"
         echo "   服务地址: http://localhost:8000"
         echo "   API 文档: http://localhost:8000/docs"
-        echo "   日志文件: api_server.log"
+        echo "   日志文件: logs/api_server.log"
         sleep 3
     else
         echo "⚠️  API 服务已在运行，跳过启动"
@@ -66,12 +66,12 @@ start_mlx_vlm_api() {
     echo "📦 启动 MLX-VLM API 服务..."
     if check_port 8001; then
         cd "$PROJECT_DIR"
-        $PYTHON mlx_vlm_api_server.py > mlx_vlm_api_server.log 2>&1 &
+        $PYTHON mlx_vlm_api_server.py > logs/mlx_vlm_api_server.log 2>&1 &
         API_PID=$!
         echo "✅ MLX-VLM API 服务已启动 (PID: $API_PID)"
         echo "   服务地址: http://localhost:8001"
         echo "   API 文档: http://localhost:8001/docs"
-        echo "   日志文件: mlx_vlm_api_server.log"
+        echo "   日志文件: logs/mlx_vlm_api_server.log"
         sleep 3
     else
         echo "⚠️  MLX-VLM API 服务已在运行，跳过启动"
@@ -128,8 +128,8 @@ echo "检查服务状态:"
 echo "  curl http://localhost:8000/health"
 echo ""
 echo "查看日志:"
-echo "  tail -f $PROJECT_DIR/api_server.log"
-echo "  tail -f $PROJECT_DIR/mlx_vlm_server.log"
+echo "  tail -f $PROJECT_DIR/logs/api_server.log"
+echo "  tail -f $PROJECT_DIR/logs/mlx_vlm_server.log"
 echo ""
 echo "停止服务:"
 echo "  pkill -f api_server.py"
