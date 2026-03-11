@@ -45,11 +45,16 @@ compatibleAgents: [invoice-agent, main-agent]
 ## 处理流程
 
 ### 1. OCR 识别
-调用 PaddleOCR-VL 获取发票文本内容：
+调用 PaddleOCR-VL 获取发票文本内容（支持图片和PDF）：
 ```python
 from paddleocr_tool import quick_recognize
 
+# 单张图片/PDF识别
 text = quick_recognize(image_path)
+
+# 批量识别（支持混合格式）
+from paddleocr_tool import batch_recognize
+result = batch_recognize(["invoice1.png", "invoice2.pdf"])
 ```
 
 ### 2. 发票类型分类
@@ -240,8 +245,10 @@ results = batch_process_invoices({
 ## 依赖与限制
 
 - **依赖**：PaddleOCR-VL 服务（http://localhost:8001）
-- **支持格式**：PNG, JPEG, WebP
-- **最大文件大小**：10MB
+- **支持格式**：PNG, JPEG, WebP, BMP, PDF
+- **最大文件大小**：50MB
+- **PDF 页数限制**：≤ 100 页
+- **批量处理**：≤ 50 文件/次
 - **处理速度**：约 7 秒/张
 - **准确率**：标准发票 95%+，模糊发票 80%+
 

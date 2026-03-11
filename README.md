@@ -9,6 +9,9 @@
 - ✅ **资源优化** - 最大化释放系统性能
 - ✅ **简单易用** - 一行代码搞定
 - ✅ **高性能** - 7秒/张，准确率100%
+- ✅ **多格式支持** - PNG, JPG, WebP, BMP, PDF
+- ✅ **批量处理** - 原生支持批量识别
+- ✅ **MLX-VLM加速** - Apple Silicon 优化
 
 ## 📦 项目结构
 
@@ -114,7 +117,8 @@ text = quick_recognize("image.png")
 **批量识别**
 ```python
 from paddleocr_tool import batch_recognize
-results = batch_recognize(["img1.png", "img2.png"])
+result = batch_recognize(["doc1.png", "doc2.pdf"])
+print(f"成功: {result['successful']}/{result['total_files']}")
 ```
 
 **OpenClaw 专用**
@@ -134,9 +138,21 @@ with OpenClawOCR() as ocr:
 curl http://localhost:8001/health
 ```
 
-**文件上传识别**
+**单文件识别（支持图片和PDF）**
 ```bash
+# 图片识别
 curl -X POST -F "file=@image.png" http://localhost:8001/ocr
+
+# PDF识别
+curl -X POST -F "file=@document.pdf" http://localhost:8001/ocr
+```
+
+**批量识别**
+```bash
+curl -X POST \
+  -F "files=@doc1.png" \
+  -F "files=@doc2.pdf" \
+  http://localhost:8001/ocr/batch
 ```
 
 **Base64 识别**

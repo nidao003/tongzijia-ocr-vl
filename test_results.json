@@ -1,0 +1,39 @@
+{
+  "timestamp": "2026-03-12 07:42:22",
+  "total_tests": 6,
+  "passed": 6,
+  "failed": 0,
+  "success_rate": 100.0,
+  "results": [
+    {
+      "name": "PDF 工具模块",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "name": "服务管理器",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "name": "文件格式支持",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "name": "批量处理",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "name": "内存管理",
+      "status": "PASSED",
+      "error": null
+    },
+    {
+      "name": "错误处理",
+      "status": "PASSED",
+      "error": null
+    }
+  ]
+}

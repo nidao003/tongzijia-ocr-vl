@@ -11,8 +11,10 @@ import subprocess
 import time
 import atexit
 import threading
-from typing import Dict, Any, List, Optional
+import io
+from typing import Dict, Any, List, Optional, Tuple
 import json
+from pdf_utils import PDFProcessor, is_pdf, get_file_page_count
 
 
 class ServiceManager:
@@ -25,6 +27,11 @@ class ServiceManager:
         self.api_process = None
         self.mlx_process = None
         self.service_count = 0  # 引用计数
+        self._last_activity = None  # 最后活动时间
+
+        # 注册清理函数
+        import atexit
+        atexit.register(self.cleanup)
 
     def _check_port(self, port: int) -> bool:
         """检查端口是否被占用"""
@@ -165,6 +172,9 @@ class ServiceManager:
         try:
             response = requests.get(f"{self.api_url}/health", timeout=2)
             if response.status_code == 200:
+                # 更新最后活动时间
+                import time
+                self._last_activity = time.time()
                 return response.json()
         except:
             pass
@@ -173,6 +183,46 @@ class ServiceManager:
             "status": "unavailable",
             "message": "服务未运行，请先调用 start() 方法"
         }
+
+    def cleanup(self):
+        """清理资源（进程退出时自动调用）"""
+        if self.api_process or self.mlx_process:
+            try:
+                self.stop()
+            except:
+                pass
+
+    def get_memory_usage(self) -> Dict[str, float]:
+        """获取服务内存使用情况（MB）"""
+        import psutil
+        memory_usage = {}
+
+        try:
+            # MLX-VLM 推理服务内存
+            if self.mlx_process and self.mlx_process.poll() is None:
+                try:
+                    proc = psutil.Process(self.mlx_process.pid)
+                    memory_usage['mlx_vlm_mb'] = proc.memory_info().rss / 1024 / 1024
+                except:
+                    pass
+
+            # API 服务内存
+            if self.api_process and self.api_process.poll() is None:
+                try:
+                    proc = psutil.Process(self.api_process.pid)
+                    memory_usage['api_mb'] = proc.memory_info().rss / 1024 / 1024
+                except:
+                    pass
+
+            # 总内存
+            if memory_usage:
+                memory_usage['total_mb'] = sum(memory_usage.values())
+
+        except ImportError:
+            # psutil 未安装
+            pass
+
+        return memory_usage
 
 
 # 全局服务管理器实例
@@ -213,56 +263,43 @@ class PaddleOCROptimized:
         if self.auto_stop:
             self.service_manager.stop()
 
-    def recognize_file(self, image_path: str) -> Dict[str, Any]:
+    def recognize_file(self, file_path: str, **kwargs) -> Dict[str, Any]:
         """
-        识别图片文件
+        识别文件（支持图片和PDF）
 
         Args:
-            image_path: 图片文件路径
+            file_path: 文件路径（图片或PDF）
+            **kwargs: 额外参数
+                - dpi: PDF 分辨率（默认 200）
+                - max_pages: PDF 最大处理页数（默认全部）
+                - merge_pdf_pages: 是否合并 PDF 所有页面的文字（默认 True）
 
         Returns:
             识别结果字典
         """
         # 检查文件
-        if not os.path.exists(image_path):
+        if not os.path.exists(file_path):
             return {
                 "success": False,
-                "error": f"文件不存在: {image_path}"
+                "error": f"文件不存在: {file_path}"
             }
 
-        # 检查文件格式
-        valid_extensions = ['.png', '.jpg', '.jpeg', '.webp']
-        if not any(image_path.lower().endswith(ext) for ext in valid_extensions):
+        # 验证文件
+        valid, error_msg = PDFProcessor.validate_file(file_path)
+        if not valid:
             return {
                 "success": False,
-                "error": f"不支持的文件格式，仅支持: {', '.join(valid_extensions)}"
+                "error": error_msg
             }
+
+        # 判断文件类型
+        file_type = PDFProcessor.get_file_type(file_path)
 
         try:
-            # 读取文件
-            with open(image_path, 'rb') as f:
-                image_data = f.read()
-
-            # 调用 API
-            files = {
-                'file': (os.path.basename(image_path), image_data, 'image/png')
-            }
-
-            response = requests.post(
-                f"{self.service_manager.api_url}/ocr",
-                files=files,
-                timeout=60
-            )
-
-            if response.status_code == 200:
-                result = response.json()
-                result['success'] = True
-                return result
+            if file_type == 'pdf':
+                return self._recognize_pdf(file_path, **kwargs)
             else:
-                return {
-                    "success": False,
-                    "error": f"API 错误 (HTTP {response.status_code}): {response.text}"
-                }
+                return self._recognize_image(file_path)
 
         except requests.exceptions.ConnectionError:
             return {
@@ -272,13 +309,112 @@ class PaddleOCROptimized:
         except requests.exceptions.Timeout:
             return {
                 "success": False,
-                "error": "请求超时（60秒），请稍后重试"
+                "error": "请求超时，请稍后重试"
             }
         except Exception as e:
             return {
                 "success": False,
                 "error": f"识别失败: {str(e)}"
             }
+
+    def _recognize_image(self, image_path: str) -> Dict[str, Any]:
+        """识别单张图片"""
+        # 读取文件
+        with open(image_path, 'rb') as f:
+            image_data = f.read()
+
+        # 调用 API
+        files = {
+            'file': (os.path.basename(image_path), image_data, 'image/png')
+        }
+
+        response = requests.post(
+            f"{self.service_manager.api_url}/ocr",
+            files=files,
+            timeout=120  # 增加超时时间以支持大文件
+        )
+
+        if response.status_code == 200:
+            result = response.json()
+            result['success'] = True
+            result['file_type'] = 'image'
+            return result
+        else:
+            return {
+                "success": False,
+                "error": f"API 错误 (HTTP {response.status_code}): {response.text}"
+            }
+
+    def _recognize_pdf(self, pdf_path: str, **kwargs) -> Dict[str, Any]:
+        """识别 PDF 文件"""
+        dpi = kwargs.get('dpi', 200)
+        max_pages = kwargs.get('max_pages', None)
+        merge_pages = kwargs.get('merge_pdf_pages', True)
+
+        # 转换 PDF 为图片
+        print(f"🔄 正在转换 PDF: {os.path.basename(pdf_path)}")
+        images = PDFProcessor.pdf_to_images(pdf_path, dpi=dpi, max_pages=max_pages)
+
+        if not images:
+            return {
+                "success": False,
+                "error": "PDF 转换失败或没有页面"
+            }
+
+        print(f"✅ PDF 共 {len(images)} 页，开始识别...")
+
+        # 逐页识别
+        page_results = []
+        all_text = []
+
+        for img, page_num in images:
+            # 将 PIL Image 转换为字节
+            img_bytes = io.BytesIO()
+            img.save(img_bytes, format='PNG')
+            img_data = img_bytes.getvalue()
+
+            # 调用 API
+            files = {
+                'file': (f"page_{page_num}.png", img_data, 'image/png')
+            }
+
+            response = requests.post(
+                f"{self.service_manager.api_url}/ocr",
+                files=files,
+                timeout=120
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                page_text = result.get('text', '')
+                page_results.append({
+                    'page': page_num,
+                    'text': page_text,
+                    'usage': result.get('usage', {})
+                })
+                all_text.append(page_text)
+                print(f"   ✅ 第 {page_num}/{len(images)} 页识别完成")
+            else:
+                page_results.append({
+                    'page': page_num,
+                    'error': f"识别失败: {response.text}"
+                })
+                print(f"   ❌ 第 {page_num}/{len(images)} 页识别失败")
+
+        # 合并结果
+        merged_text = '\n\n'.join(all_text) if merge_pages else all_text
+
+        return {
+            "success": True,
+            "file_type": "pdf",
+            "total_pages": len(images),
+            "text": merged_text if merge_pages else None,
+            "pages": page_results,
+            "usage": {
+                "total_pages": len(images),
+                "successful_pages": len([r for r in page_results if 'error' not in r])
+            }
+        }
 
     def get_text_only(self, image_path: str) -> str:
         """
@@ -295,31 +431,49 @@ class PaddleOCROptimized:
 
     def batch_recognize(
         self,
-        image_paths: List[str],
-        callback: Optional[callable] = None
-    ) -> List[Dict[str, Any]]:
+        file_paths: List[str],
+        callback: Optional[callable] = None,
+        **kwargs
+    ) -> Dict[str, Any]:
         """
-        批量识别多张图片
+        批量识别多个文件（支持图片和PDF）
 
         Args:
-            image_paths: 图片路径列表
-            callback: 进度回调函数 callback(current, total)
+            file_paths: 文件路径列表
+            callback: 进度回调函数 callback(current, total, filename)
+            **kwargs: 传递给 recognize_file 的参数
 
         Returns:
-            识别结果列表
+            批量识别结果字典
         """
         results = []
-        total = len(image_paths)
+        total = len(file_paths)
+        successful = 0
+        failed = 0
 
-        for i, image_path in enumerate(image_paths, 1):
-            result = self.recognize_file(image_path)
+        for i, file_path in enumerate(file_paths, 1):
+            result = self.recognize_file(file_path, **kwargs)
+
+            # 添加文件名到结果
+            result['filename'] = os.path.basename(file_path)
+
+            if result.get('success'):
+                successful += 1
+            else:
+                failed += 1
+
             results.append(result)
 
             # 进度回调
             if callback:
-                callback(i, total)
+                callback(i, total, file_path)
 
-        return results
+        return {
+            'total_files': total,
+            'successful': successful,
+            'failed': failed,
+            'results': results
+        }
 
     def health_check(self) -> Dict[str, Any]:
         """健康检查"""
@@ -356,24 +510,34 @@ def quick_recognize(image_path: str) -> str:
         return ocr.get_text_only(image_path)
 
 
-def batch_recognize(image_paths: List[str]) -> List[Dict[str, Any]]:
+def batch_recognize(
+    file_paths: List[str],
+    callback: Optional[callable] = None,
+    **kwargs
+) -> Dict[str, Any]:
     """
-    批量识别（自动管理服务）
+    批量识别（自动管理服务，支持图片和PDF）
 
     Args:
-        image_paths: 图片路径列表
+        file_paths: 文件路径列表
+        callback: 进度回调函数 callback(current, total, filename)
+        **kwargs: 传递给 recognize_file 的参数
+            - dpi: PDF 分辨率（默认 200）
+            - max_pages: PDF 最大处理页数（默认全部）
+            - merge_pdf_pages: 是否合并 PDF 所有页面的文字（默认 True）
 
     Returns:
-        识别结果列表
+        批量识别结果字典
 
     示例:
-        results = batch_recognize(["doc1.png", "doc2.png"])
-        for r in results:
+        result = batch_recognize(["doc1.png", "doc2.pdf"])
+        print(f"成功: {result['successful']}/{result['total_files']}")
+        for r in result['results']:
             if r['success']:
-                print(r['text'])
+                print(f"{r['filename']}: {r['text'][:50]}...")
     """
     with PaddleOCROptimized(auto_start=True, auto_stop=True) as ocr:
-        return ocr.batch_recognize(image_paths)
+        return ocr.batch_recognize(file_paths, callback, **kwargs)
 
 
 def recognize_with_auto_stop(image_path: str, stop_after: int = 300):
