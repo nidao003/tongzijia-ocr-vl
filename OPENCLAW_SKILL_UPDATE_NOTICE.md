@@ -134,5 +134,29 @@ print(f"总内存: {memory['total_mb']} MB")
 
 ---
 
-**通知版本**: 1.0
+## 📥 升级指令（复制发送给 OpenClaw）
+
+```
+请帮我升级 PaddleOCR-VL 技能到 v3.0：
+
+项目路径：/Users/daodao/dsl/PaddleOCR-VL
+配置文件：openclaw_config.json
+
+新增功能：
+- ✅ PDF文件支持
+- ✅ 批量处理（50个文件/次）
+- ✅ 性能提升474%（1.22秒/张）
+- ✅ 11种格式支持
+
+系统要求：
+- Apple Silicon M4+
+- 16GB RAM
+- macOS 14.0+
+
+请更新技能注册并测试新功能。
+```
+
+---
+
+**通知版本**: 1.1
 **发布日期**: 2026-03-12

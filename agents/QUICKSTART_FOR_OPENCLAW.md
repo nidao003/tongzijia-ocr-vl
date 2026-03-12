@@ -4,6 +4,33 @@
 
 ---
 
+## 📥 给 OpenClaw 的安装指令
+
+**复制以下内容发送给 OpenClaw 主系统**：
+
+```
+请帮我安装/升级发票童子甲（invoice-agent）v3.0：
+
+配置来源：/Users/daodao/dsl/PaddleOCR-VL/agents/invoice-agent/
+
+主要功能：
+- 专职发票识别、分类和归档
+- 支持 PDF 和批量处理（最多 50 个文件）
+- 自动归档到 archive/{年}/{月}/{类型}/ 目录
+- 智能命名：YYYYMMDD_金额(分)_发票号码_类型简称_开票方简称
+
+技能依赖：
+1. paddleocr-vl（必需）- 本地技能
+   路径：/Users/daodao/dsl/PaddleOCR-VL/openclaw_config.json
+2. email（可选）- OpenClaw 主系统技能
+   用于邮箱监控和附件下载
+
+工作空间：~/.openclaw/workspace-invoice-agent/
+配置文件：agents/invoice-agent/config.json
+```
+
+---
+
 ## 📋 任务概述
 
 你需要创建一个名为 `invoice-agent`（发票处理专员）的子 Agent，它能：

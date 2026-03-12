@@ -1,5 +1,27 @@
 # OpenClaw 快速上手指南
 
+## 📥 给 OpenClaw 的安装指令
+
+**复制以下内容发送给 OpenClaw 主系统**：
+
+```
+请帮我安装/升级 PaddleOCR-VL 技能：
+
+项目路径：/Users/daodao/dsl/PaddleOCR-VL
+配置文件：openclaw_config.json
+
+功能：
+- 文档识别服务（支持图片和 PDF）
+- 批量处理（最多 50 个文件）
+- MLX-VLM 加速（Apple Silicon 优化）
+- 按需启动，用完自动停止
+
+服务地址：http://localhost:8001
+请按照 openclaw_config.json 进行配置。
+```
+
+---
+
 ## 🎯 30 秒开始使用
 
 ### 第 1 步：导入工具
