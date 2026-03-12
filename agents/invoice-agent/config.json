@@ -38,6 +38,30 @@
       ]
     },
     {
+      "name": "email",
+      "source": "openclaw",
+      "type": "service",
+      "description": "OpenClaw 主系统提供的邮件服务",
+      "enabled": true,
+      "required": true,
+      "config": {
+        "provider": "openclaw",
+        "service_type": "email",
+        "features": [
+          "read_email",
+          "download_attachments",
+          "mark_as_read",
+          "search_emails"
+        ]
+      },
+      "tools": [
+        "check_email",
+        "download_attachments",
+        "search_invoice_emails",
+        "mark_as_read"
+      ]
+    },
+    {
       "name": "invoice-processor",
       "source": "local",
       "path": "/Users/daodao/dsl/PaddleOCR-VL/agents/invoice-agent/skills/invoice-processor/SKILL.md",
