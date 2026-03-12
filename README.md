@@ -35,6 +35,30 @@ paddleocr-vl/
     └── ...其他报告
 ```
 
+## 📥 OpenClaw 安装/升级
+
+**复制以下指令发送给 OpenClaw 主系统，自动完成安装或升级**：
+
+```
+请帮我安装/升级 PaddleOCR-VL 项目：
+
+仓库地址：https://gitea.dd.yp100.cn:8443/openclaw/PaddleOCR-VL-claw.git
+本地路径：/Users/daodao/dsl/PaddleOCR-VL
+
+需要安装/升级：
+1. paddleocr-vl 技能（v3.0）- 文档识别服务
+2. invoice-agent 智能体（v3.0）- 发票处理智能体
+
+配置要求：
+- Python 3.11+
+- Apple Silicon M4+ (16GB+ 内存推荐)
+- MLX-VLM 加速支持
+
+请按照项目的 openclaw_config.json 和 agents/invoice-agent/config.json 进行配置。
+```
+
+---
+
 ## 🚀 快速开始
 
 ### OpenClaw 用户

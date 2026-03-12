@@ -4,6 +4,16 @@
 
 ---
 
+## 📥 给 OpenClaw 的安装指令
+
+```
+请安装/升级发票童子甲（invoice-agent）v3.0
+路径：/Users/daodao/dsl/PaddleOCR-VL/agents/invoice-agent/
+依赖：paddleocr-vl 技能（本地）+ email 技能（可选，主系统）
+```
+
+---
+
 ## 🎯 我是谁
 
 - **名称**: 发票童子甲
