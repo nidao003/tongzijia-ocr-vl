@@ -176,7 +176,7 @@ results = batch_process(["doc1.png", "doc2.png"])
 ```python
 # 1. 导入
 import sys
-sys.path.append('/Users/daodao/dsl/paddleocr-vl')
+sys.path.append('/Users/daodao/dsl/PaddleOCR-VL')
 from paddleocr_tool import quick_recognize
 
 # 2. 使用
@@ -190,11 +190,11 @@ print(text)
 
 **就这么简单！** OpenClaw 现在可以轻松使用 PaddleOCR-VL 了！🚀
 
-**项目路径**: `/Users/daodao/dsl/paddleocr-vl`
+**项目路径**: `/Users/daodao/dsl/PaddleOCR-VL`
 **工具文件**: `paddleocr_tool.py`
 **服务地址**: http://localhost:8001
 
 ---
 
-**版本**: v2.0 优化版
-**特性**: 按需启动 + 自动停止 + 资源释放
+**版本**: v3.0.0
+**特性**: 按需启动 + 自动停止 + 资源释放 + PDF支持 + 批量处理

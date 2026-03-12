@@ -93,7 +93,7 @@ Testing OCR on Mac M4
 - **地址**: http://localhost:8001
 - **后端**: MLX-VLM (Apple Silicon 优化)
 - **适用**: 生产环境
-- **性能**: ~7 秒/张 🚀
+- **性能**: ~1.2 秒/张 🚀
 
 ### 3. MLX-VLM 推理服务
 - **地址**: http://localhost:8111

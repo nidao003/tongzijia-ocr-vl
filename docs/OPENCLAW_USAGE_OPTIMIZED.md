@@ -106,11 +106,11 @@ print(text)
 
 **执行流程**：
 1. 自动启动服务（约 5 秒）
-2. 识别图片（约 7 秒）
+2. 识别图片（约 1.2 秒）
 3. 自动停止服务（约 1 秒）
 4. 释放所有资源
 
-**总耗时**：约 13 秒
+**总耗时**：约 7 秒
 **资源占用**：仅在用时占用
 
 ---
@@ -448,9 +448,9 @@ quick_recognize('test_image.png')
 
 ---
 
-**版本**：优化版 v2.0
-**日期**：2025年
-**路径**：/Users/daodao/dsl/paddleocr-vl
-**文件**：paddleocr_tool_optimized.py
+**版本**：优化版 v3.0.0
+**日期**：2026年3月
+**路径**：/Users/daodao/dsl/PaddleOCR-VL
+**文件**：paddleocr_tool.py
 
 🎉 **OpenClaw 现在可以高效使用 PaddleOCR-VL 了！**

@@ -68,7 +68,7 @@ paddleocr-vl/
 **最简单的使用方式**：
 ```python
 import sys
-sys.path.append('/Users/daodao/dsl/paddleocr-vl')
+sys.path.append('/Users/daodao/dsl/PaddleOCR-VL')
 from paddleocr_tool import quick_recognize
 
 text = quick_recognize("/path/to/image.png")
@@ -249,7 +249,7 @@ pip install "numpy<2.0" --force-reinstall
 
 ---
 
-**版本**: v2.0 优化版
-**更新**: 2025年3月
-**路径**: /Users/daodao/dsl/paddleocr-vl
+**版本**: v3.0.0
+**更新**: 2026年3月
+**路径**: /Users/daodao/dsl/PaddleOCR-VL
 **仓库**: https://gitea.dd.yp100.cn:8443/openclaw/PaddleOCR-VL-claw
