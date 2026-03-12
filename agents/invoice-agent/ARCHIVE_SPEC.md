@@ -43,19 +43,19 @@
 
 ## 📝 文件命名规范
 
-### 命名格式
+### 命名格式（优化版 v2.0）
 
 ```
-{年月}{日}_{发票类型}_{交易方简称}_{流水号}.{扩展名}
+YYYYMMDD_金额(分)_发票号码_类型简称_开票方简称.{扩展名}
 ```
 
 ### 命名示例
 
 ```
-20260311_增值税专用发票_华为技术_001.png
-20260312_增值税普通发票_阿里云_002.jpg
-20260315_电子发票_腾讯云_003.pdf
-20260320_定额发票_XX餐饮_004.png
+20260311_100000_00534712_S_华为技术.png
+20260312_50000_12345678_C_阿里云.jpg
+20260315_30000_98765432_E_腾讯云.pdf
+20260320_8000_11111111_Q_XX餐饮.png
 ```
 
 ### 命名规则
@@ -63,10 +63,29 @@
 | 部分 | 说明 | 示例 | 来源 |
 |------|------|------|------|
 | **年月日** | YYYYMMDD 格式 | 20260311 | 发票开票日期 |
-| **发票类型** | 中文类型名 | 增值税专用发票 | 自动分类结果 |
-| **交易方** | 购买方或销售方简称 | 华为技术 | 取自发票字段 |
-| **流水号** | 3位数字（当天递增） | 001 | 当天该类型序号 |
+| **金额** | 金额（分，整数） | 100000 | 价税合计 × 100 |
+| **发票号码** | 8位发票号 | 00534712 | 发票号码字段 |
+| **类型简称** | 单字母类型码 | S/C/E/Q | 发票类型映射 |
+| **开票方** | 销售方简称 | 华为技术 | 公司简称生成器 |
 | **扩展名** | 原始文件扩展名 | .png/.pdf | 保持原格式 |
+
+### 类型代码映射
+
+| 代码 | 类型 | 英文 | 说明 |
+|------|------|------|------|
+| **S** | 增值税专用发票 | vat_special | Special |
+| **C** | 增值税普通发票 | vat_common | Common |
+| **E** | 电子发票 | electronic | Electronic |
+| **Q** | 定额发票 | quota | Quota |
+| **U** | 未知类型 | unknown | Unknown |
+
+### 金额转换示例
+
+| 原始金额 | 转换后（分） | 说明 |
+|---------|-------------|------|
+| ¥1,000.00 | 100000 | 去除符号和小数点，乘100 |
+| ¥500.50 | 50050 | 保留精度 |
+| ¥227,500.00 | 22750000 | 大额发票 |
 
 ### 交易方简称规则
 
@@ -110,7 +129,7 @@ def get_short_name(company_name):
 
 def archive_invoice(file_path, invoice_data):
     """
-    归档单张发票
+    归档单张发票（优化版 v2.0）
 
     Args:
         file_path: 原始文件路径
@@ -122,39 +141,48 @@ def archive_invoice(file_path, invoice_data):
     # 1. 提取信息
     invoice_date = invoice_data['fields']['invoice_date']  # 2024-12-18
     invoice_type = invoice_data['invoice_type']            # vat_special
-    invoice_type_name = invoice_data['invoice_type_name']  # 增值税专用发票
-    company_name = invoice_data['fields'].get('buyer_name') or invoice_data['fields'].get('seller_name')
+    invoice_no = invoice_data['fields']['invoice_no']      # 00534712
+    total_amount = invoice_data['fields']['total_amount']  # "1000.00"
+    company_name = invoice_data['fields'].get('seller_name') or invoice_data['fields'].get('buyer_name')
 
     # 2. 解析日期
     year_month = invoice_date[:7].replace('-', '')  # 2024-12 → 202412
     year_month_day = invoice_date.replace('-', '')    # 2024-12-18 → 20241218
 
-    # 3. 生成简称
-    short_name = get_short_name(company_name)
+    # 3. 生成公司简称
+    short_name = get_short_name(company_name)  # "华为技术"
 
-    # 4. 生成流水号（查询当天该类型的序号）
-    serial_number = get_next_serial_number(year_month_day, invoice_type)
+    # 4. 转换金额为分
+    amount_cents = amount_to_cents(total_amount)  # "1000.00" → 100000
 
-    # 5. 构造新文件名
+    # 5. 获取类型代码
+    type_code = get_invoice_type_code(invoice_type)  # "vat_special" → "S"
+
+    # 6. 构造新文件名（新格式）
+    # 格式: YYYYMMDD_金额(分)_发票号码_类型简称_开票方简称
     original_ext = os.path.splitext(file_path)[1]
-    new_filename = f"{year_month_day}_{invoice_type_name}_{short_name}_{serial_number:03d}{original_ext}"
+    new_filename = f"{year_month_day}_{amount_cents}_{invoice_no}_{type_code}_{short_name}{original_ext}"
+    # 示例: 20241218_100000_00534712_S_华为技术.png
 
-    # 6. 构造目标路径
+    # 7. 构造目标路径
     archive_dir = f"~/.openclaw/workspace-invoice-agent/archive/{year_month[:4]}/{year_month[4:]}/{invoice_type}/"
     os.makedirs(os.path.expanduser(archive_dir), exist_ok=True)
 
     target_path = os.path.join(archive_dir, new_filename)
 
-    # 7. 移动/复制文件
+    # 8. 移动文件
     shutil.move(file_path, os.path.expanduser(target_path))
 
-    # 8. 更新索引
+    # 9. 更新索引
     update_invoice_index({
         'original_filename': os.path.basename(file_path),
         'new_filename': new_filename,
         'archive_path': target_path,
         'invoice_date': invoice_date,
         'invoice_type': invoice_type,
+        'invoice_no': invoice_no,
+        'amount': total_amount,
+        'amount_cents': amount_cents,
         'company_name': company_name,
         'archived_at': datetime.now().isoformat()
     })
@@ -279,17 +307,19 @@ def process_email_invoices():
   },
   "invoices": [
     {
-      "id": "20260311_vat_special_001",
+      "id": "20260311_100000_00534712_S_华为技术",
       "original_filename": "invoice_001.png",
-      "new_filename": "20260311_增值税专用发票_华为技术_001.png",
-      "archive_path": "archive/2026/2026-03/vat_special/20260311_增值税专用发票_华为技术_001.png",
+      "new_filename": "20260311_100000_00534712_S_华为技术.png",
+      "archive_path": "archive/2026/03/vat_special/20260311_100000_00534712_S_华为技术.png",
       "invoice_date": "2026-03-11",
       "invoice_type": "vat_special",
       "invoice_type_name": "增值税专用发票",
       "invoice_code": "1500242720",
       "invoice_no": "00534712",
-      "amount": "227500.00",
+      "amount": "1000.00",
+      "amount_cents": 100000,
       "company_name": "华为技术有限公司",
+      "company_short_name": "华为技术",
       "archived_at": "2026-03-12T10:25:00Z"
     }
   ]

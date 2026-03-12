@@ -170,61 +170,87 @@ class InvoiceArchiver:
 
         return name
 
-    def get_next_serial_number(self, date_str: str, invoice_type: str) -> int:
+    def get_invoice_type_code(self, invoice_type: str) -> str:
         """
-        获取下一个流水号
+        获取发票类型简称
 
         Args:
-            date_str: 日期字符串（YYYYMMDD）
-            invoice_type: 发票类型
+            invoice_type: 发票类型（vat_special, vat_common等）
 
         Returns:
-            流水号（从1开始）
+            类型简称（单字母）
         """
-        # 查找当天该类型的最大流水号
-        max_serial = 0
+        type_codes = {
+            "vat_special": "S",    # Special
+            "vat_common": "C",     # Common
+            "electronic": "E",      # Electronic
+            "quota": "Q"           # Quota
+        }
 
-        for invoice in self.index["invoices"]:
-            if invoice["invoice_date"].replace("-", "") == date_str and invoice["invoice_type"] == invoice_type:
-                # 从文件名中提取流水号
-                filename = invoice["new_filename"]
-                match = re.search(r'_(\d{3})\.', filename)
-                if match:
-                    serial = int(match.group(1))
-                    max_serial = max(max_serial, serial)
+        return type_codes.get(invoice_type, "U")  # U = Unknown
 
-        return max_serial + 1
+    def amount_to_cents(self, amount_str: str) -> int:
+        """
+        将金额字符串转换为分
+
+        Args:
+            amount_str: 金额字符串（如 "1000.00"）
+
+        Returns:
+            金额（分）
+        """
+        # 去除所有非数字字符（小数点、逗号、货币符号等）
+        amount_str = re.sub(r'[^\d.]', '', amount_str)
+
+        try:
+            amount = float(amount_str)
+            return int(amount * 100)  # 转换为分
+        except:
+            return 0
 
     def generate_filename(self, invoice_data: dict) -> str:
         """
-        生成标准化文件名
+        生成标准化文件名（优化版）
+
+        命名格式: YYYYMMDD_金额(分)_发票号码_类型简称_开票方简称
+
+        示例:
+            20260311_100000_00534712_S_华为技术
+            20260312_50000_12345678_C_阿里云
 
         Args:
             invoice_data: 发票数据
 
         Returns:
-            标准化文件名
+            标准化文件名（不含扩展名）
         """
-        # 1. 提取信息
+        # 1. 提取日期
         invoice_date = invoice_data.get("invoice_date", "")
-        invoice_type_name = invoice_data.get("invoice_type_name", "未知类型")
-        company_name = invoice_data.get("buyer_name") or invoice_data.get("seller_name", "未知公司")
-
-        # 2. 解析日期
         if invoice_date:
             date_str = invoice_date.replace("-", "")
         else:
             date_str = datetime.now().strftime("%Y%m%d")
 
-        # 3. 获取简称
-        short_name = self.get_short_name(company_name)
+        # 2. 提取金额并转换为分
+        amount = invoice_data.get("fields", {}).get("total_amount", "0.00")
+        amount_cents = self.amount_to_cents(str(amount))
 
-        # 4. 获取流水号
-        invoice_type = invoice_data.get("invoice_type", "unknown")
-        serial = self.get_next_serial_number(date_str, invoice_type)
+        # 3. 提取发票号
+        invoice_no = invoice_data.get("fields", {}).get("invoice_no", "")
 
-        # 5. 构造文件名
-        filename = f"{date_str}_{invoice_type_name}_{short_name}_{serial:03d}"
+        # 4. 获取类型简称
+        invoice_type = invoice_data.get("invoice_type", "")
+        type_code = self.get_invoice_type_code(invoice_type)
+
+        # 5. 获取开票方简称
+        seller_name = invoice_data.get("fields", {}).get("seller_name", "")
+        if not seller_name:
+            seller_name = invoice_data.get("fields", {}).get("buyer_name", "未知公司")
+        short_name = self.get_short_name(seller_name)
+
+        # 6. 构造文件名
+        # 格式: YYYYMMDD_金额(分)_发票号码_类型简称_开票方简称
+        filename = f"{date_str}_{amount_cents}_{invoice_no}_{type_code}_{short_name}"
 
         return filename
 
