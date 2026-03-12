@@ -1,11 +1,11 @@
 {
   "agent": {
     "id": "invoice-agent",
-    "name": "发票处理专员",
+    "name": "发票童子甲",
     "role": "户部·发票司",
     "emoji": "🧾",
-    "version": "1.0.0",
-    "description": "专门负责发票识别、分类和字段提取的子 Agent",
+    "version": "3.0.0",
+    "description": "专门负责发票识别、分类和字段提取的子 Agent（支持PDF、批量处理）",
     "type": "subagent",
     "mode": "standalone"
   },
@@ -54,11 +54,15 @@
       "electronic",
       "quota"
     ],
-    "supported_formats": ["PNG", "JPEG", "WebP"],
+    "supported_formats": ["PNG", "JPEG", "JPG", "WebP", "BMP", "GIF", "TIFF", "PDF"],
     "output_formats": ["CSV", "JSON", "Excel"],
     "batch_processing": true,
-    "max_batch_size": 10,
-    "auto_classification": true
+    "max_batch_size": 50,
+    "auto_classification": true,
+    "pdf_support": true,
+    "max_pdf_pages": 100,
+    "max_file_size_mb": 50,
+    "mixed_format_batch": true
   },
 
   "communication": {
@@ -123,8 +127,16 @@
 
   "metadata": {
     "created_date": "2026-03-11",
-    "last_updated": "2026-03-11",
+    "last_updated": "2026-03-12",
+    "version": "3.0.0",
     "author": "PaddleOCR-VL Integration",
-    "documentation": "/Users/daodao/dsl/PaddleOCR-VL/agents/invoice-agent/SOUL.md"
+    "documentation": [
+      "/Users/daodao/dsl/PaddleOCR-VL/agents/invoice-agent/SOUL.md",
+      "/Users/daodao/dsl/PaddleOCR-VL/agents/invoice-agent/AGENT_CONFIG_GUIDE.md"
+    ],
+    "paddleocr_version": "3.0.0",
+    "changelog": {
+      "3.0.0": "PDF支持、批量处理、性能优化"
+    }
   }
 }
