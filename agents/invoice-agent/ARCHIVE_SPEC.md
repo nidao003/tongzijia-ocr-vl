@@ -439,6 +439,6 @@ def query_by_company(company_name):
 
 ---
 
-**规范版本**: 1.0
+**规范版本**: 2.0
 **生效日期**: 2026-03-12
 **维护者**: invoice-agent

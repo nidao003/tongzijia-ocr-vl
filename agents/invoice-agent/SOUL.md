@@ -568,14 +568,14 @@ invoice2.png,增值税普通发票,87654321,2026-03-10,个人C,公司D,500.00,,5
 ```json
 {
   "event_type": "upgrade_available",
-  "timestamp": "2026-03-11T23:30:00Z",
+  "timestamp": "2026-03-12T23:30:00Z",
   "content": {
-    "current_version": "1.0.0",
-    "available_version": "1.1.0",
+    "current_version": "3.0.0",
+    "available_version": "3.1.0",
     "changes": [
-      "新增2种发票类型支持",
-      "优化字段提取算法",
-      "修复已知问题"
+      "新增PDF和批量处理支持",
+      "优化文件命名规范",
+      "性能提升474%"
     ],
     "impact_assessment": {
       "preserves_learning_data": true,

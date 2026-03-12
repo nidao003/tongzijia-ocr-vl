@@ -342,6 +342,6 @@ openclaw agent apply-config --agent invoice-agent
 
 ---
 
-**版本**: 1.0.0
-**更新日期**: 2026-03-11
+**版本**: 3.0.0
+**更新日期**: 2026-03-12
 **维护者**: PaddleOCR-VL Integration Team
