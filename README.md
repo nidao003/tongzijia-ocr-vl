@@ -42,7 +42,7 @@ paddleocr-vl/
 ```
 请帮我安装/升级 PaddleOCR-VL 项目：
 
-仓库地址：https://gitea.dd.yp100.cn:8443/openclaw/PaddleOCR-VL-claw.git
+仓库地址：https://github.com/nidao003/tongzijia-ocr-vl.git
 本地路径：/Users/daodao/dsl/PaddleOCR-VL
 
 需要安装/升级：
@@ -79,7 +79,7 @@ print(text)
 
 ```bash
 # 1. 克隆仓库
-git clone https://gitea.dd.yp100.cn:8443/openclaw/PaddleOCR-VL-claw.git
+git clone https://github.com/nidao003/tongzijia-ocr-vl.git
 cd PaddleOCR-VL-claw
 
 # 2. 创建虚拟环境（需要 Python 3.11）
@@ -252,4 +252,4 @@ pip install "numpy<2.0" --force-reinstall
 **版本**: v3.0.0
 **更新**: 2026年3月
 **路径**: /Users/daodao/dsl/PaddleOCR-VL
-**仓库**: https://gitea.dd.yp100.cn:8443/openclaw/PaddleOCR-VL-claw
+**仓库**: https://github.com/nidao003/tongzijia-ocr-vl

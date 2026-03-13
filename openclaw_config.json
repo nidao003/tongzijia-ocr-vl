@@ -468,7 +468,7 @@
     ],
     "api_docs": "http://localhost:8001/docs",
     "project_path": "/Users/daodao/dsl/PaddleOCR-VL",
-    "git_repo": "https://gitea.dd.yp100.cn:8443/openclaw/PaddleOCR-VL-claw.git"
+    "git_repo": "https://github.com/nidao003/tongzijia-ocr-vl.git"
   },
 
   "changelog_details": {
